@@ -1,0 +1,2 @@
+# Pocetak-
+Trenutno - Osnovna EDA 
