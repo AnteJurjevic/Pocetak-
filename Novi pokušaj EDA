@@ -1,0 +1,97 @@
+
+title: "Analiza podataka o prometnim nesrećama u Barceloni, podaci preuzeti sa Kagglea"
+
+ ---
+title: "Analiza prometnih nesreća u Barceloni 2017.godine"
+output:
+  html_document:
+    toc: true # table of content true
+---
+
+# Analiza podataka
+Učitavanje podataka
+```{r}
+# read data
+nesrece = read.csv("D:/Users/HPUser/Desktop/Praksa/accidents_2017.csv")
+
+```
+
+Osnovna statistika iz podataka
+```{r}
+summary(nesrece)
+
+head(nesrece) 
+```
+
+Varijable u podacima:
+
+Id
+District Name
+Neighborhood Name
+Street
+Weekday
+Month
+Day
+Hour
+Part of the day
+Mild injuries
+Serious injuries
+Victims
+Vehicles involved
+Longitude
+Latitude
+
+## mjesec
+
+```{r}
+nesrece_mjesec = nesrece %>%
+                    select(Id, Month) %>%
+                    group_by(Id) %>%
+                    distinct()  
+                    
+head(nesrece_mjesec)
+
+summary(nesrece_mjesec$Month) #broj nesreca po mjesecima
+
+
+monthDist  = ggplot(data = nesrece_mjesec) +
+                geom_bar(mapping = aes(x = Month, y = ..count.., fill = Month)) +
+                labs(title = 'Month') + 
+                scale_fill_brewer(palette = 'Paired')
+print(monthDist)
+```
+
+### Prosječni broj nesreća po mjesecima
+```{r}
+nesrece_mjesec_suma = nesrece %>%
+                        select(Id, Month, Victims) %>%
+                        group_by(Id) %>%
+                        arrange(Id) %>%
+                        summarise(Total_Victims = sum(Victims))
+
+nesrece_mjeseci = nesrece %>%
+                select(Id,Month) %>%
+                group_by(Id) %>%
+                arrange(Id) %>%
+                distinct()
+                
+head(nesrece_mjesec_suma)
+head(nesrece_mjeseci)
+
+nesrece_zrtve_mjesec = full_join(nesrece_mjesec_suma,nesrece_mjeseci , by = "Id")
+head(nesrece_zrtve_mjesec)
+
+prosjek = nesrece_zrtve_mjesec %>%
+                            group_by(Month) %>%
+                            summarize(Total = sum(as.numeric(Total_Victims)), 
+                                      Count = n(), 
+                                      Average = Total/Count)
+head(prosjek)
+
+plot  = ggplot(data = prosjek) +
+                    geom_bar(mapping = aes(x = Month, y = Average,fill = Month), stat = 'identity') +
+                    labs(title = 'Prosječno ') +
+                    scale_fill_brewer(palette = 'Paired')
+print(plot)
+
+```
